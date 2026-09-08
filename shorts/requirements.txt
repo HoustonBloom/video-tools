@@ -1,0 +1,10 @@
+# Python side. ffmpeg and ffprobe are separate and must be on PATH.
+#
+# Versions are the ones this was built and measured against on 2026-08-28,
+# not floors. opencv 5.0 matters: it dropped CascadeClassifier and ships no
+# cascade files, which is why subject location here uses motion, not faces.
+opencv-python-headless==5.0.0.93
+numpy==2.4.4
+
+# Only needed for transcript work and verification by re-transcription.
+faster-whisper==1.2.1

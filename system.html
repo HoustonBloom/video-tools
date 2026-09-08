@@ -1,0 +1,355 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The video tools</title>
+<style>
+:root{
+  --font-sans:"Space Grotesk", system-ui, sans-serif;
+  --font-display:"Plus Jakarta Sans", system-ui, sans-serif;
+  --font-retro:"Aldrich", ui-monospace, monospace;
+  --font-mono:"JetBrains Mono", ui-monospace, "Cascadia Mono", monospace;
+  --ink:#09090b;
+  --paper:#fafaf9;
+  --warm-50:#fafaf9; --warm-100:#f5f5f4; --warm-200:#e7e5e4; --warm-300:#d6d3d1;
+  --warm-400:#a8a29e; --warm-500:#78716c; --warm-600:#57534e; --warm-700:#44403c;
+  --lavender:#c4b5fd; --lavender-light:#ede9fe;
+  --sage:#86c195; --sage-light:#dcfce7;
+  --sky:#7dd3fc; --sky-light:#e0f2fe;
+  --butter:#f5d88e; --butter-light:#fef9c3;
+  --blush:#f9a8b8; --blush-light:#fce7f3;
+  --nav-w:200px; --content-max:680px;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font-family:var(--font-sans);background:var(--paper);color:var(--ink);
+  line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased}
+.shell{display:flex;align-items:flex-start}
+
+.sidebar{width:var(--nav-w);flex-shrink:0;position:sticky;top:0;height:100vh;
+  overflow-y:auto;padding:40px 0 40px 24px;border-right:1px solid var(--warm-200)}
+.sidebar-title{font-family:var(--font-retro);font-size:.6rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--warm-600);margin-bottom:14px}
+.sidebar-link{display:block;font-size:.78rem;color:var(--warm-600);
+  text-decoration:none;padding:5px 12px 5px 10px;border-left:2px solid transparent;
+  margin-left:-1px;line-height:1.4;transition:color .15s,border-color .15s}
+.sidebar-link:hover{color:var(--ink);border-left-color:var(--sage)}
+
+.main{flex:1;min-width:0;padding:40px clamp(20px,4vw,56px) 96px}
+.inner{max-width:var(--content-max)}
+.mobile-nav{display:none}
+
+.header{margin-bottom:56px}
+.header-label{font-family:var(--font-retro);font-size:.6rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--warm-600);margin-bottom:12px}
+.header-title{font-family:var(--font-display);font-weight:800;
+  font-size:clamp(1.9rem,4vw,2.4rem);line-height:1.12;letter-spacing:-.025em;
+  margin:0 0 12px}
+.header-sub{font-size:1.05rem;color:var(--warm-600);max-width:56ch;margin:0}
+
+.section{margin-bottom:64px;scroll-margin-top:24px}
+.section-label{font-family:var(--font-retro);font-size:.6rem;text-transform:uppercase;
+  letter-spacing:.12em;color:var(--warm-600);margin-bottom:8px}
+.section-title{font-family:var(--font-display);font-weight:700;font-size:1.35rem;
+  line-height:1.25;letter-spacing:-.015em;margin:0 0 16px}
+.subsection-title{font-family:var(--font-display);font-size:.9rem;font-weight:700;
+  margin:24px 0 8px}
+p{margin:0 0 14px}
+a{color:var(--warm-700)}
+
+.hl{background:var(--butter-light);padding:0 2px;border-radius:2px}
+.hl--sky{background:var(--sky-light);padding:0 2px;border-radius:2px}
+.np{display:inline-block;padding:1px 5px;border-radius:2px;margin:0 1px;
+  font-family:var(--font-mono);font-size:.78rem}
+.np--top{background:var(--sky-light);color:var(--warm-700)}
+code{font-family:var(--font-mono);font-size:.82rem;background:var(--warm-100);
+  border-radius:3px;padding:1px 5px;overflow-wrap:anywhere}
+
+.step{display:grid;grid-template-columns:26px 1fr;gap:0 14px;align-items:baseline;
+  border-left:4px solid var(--sky);
+  background:color-mix(in srgb, var(--sky-light) 40%, var(--paper));
+  padding:12px 16px;margin-bottom:8px;border-radius:0 4px 4px 0}
+.step-number{font-family:var(--font-mono);font-size:.72rem;color:var(--warm-600)}
+.step-text{font-size:.9rem;line-height:1.6;min-width:0}
+.step-text strong{color:var(--ink);display:block;margin-bottom:2px}
+
+.concept{border:1px solid var(--warm-200);border-radius:6px;padding:16px;
+  background:var(--paper);margin-bottom:10px;min-width:0}
+.concept:hover{border-color:var(--warm-400)}
+.concept-title{font-family:var(--font-display);font-size:.95rem;font-weight:700;
+  margin-bottom:6px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.concept-status{font-family:var(--font-mono);font-size:.62rem;padding:2px 6px;
+  border-radius:3px;text-transform:uppercase;letter-spacing:.04em}
+.concept-status--settled{background:var(--sage-light);color:#22543d}
+.concept-status--open{background:var(--butter-light);color:#6b4a07}
+.concept-body{font-size:.875rem;color:var(--warm-600);line-height:1.6;margin:0}
+.conceptgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+  gap:10px}
+
+.deflist{margin:14px 0}
+.defrow{display:grid;grid-template-columns:minmax(120px,168px) 1fr;gap:4px 18px;
+  padding:11px 0;border-top:1px dashed var(--warm-300);align-items:baseline}
+.defkey{font-family:var(--font-mono);font-size:.76rem;color:var(--warm-600);
+  overflow-wrap:anywhere}
+.defval{font-size:.875rem;line-height:1.6;min-width:0}
+
+.callout{border-left:4px solid var(--butter);
+  background:color-mix(in srgb, var(--butter-light) 45%, var(--paper));
+  padding:14px 16px;border-radius:0 4px 4px 0;margin:16px 0}
+.callout--blush{border-left-color:var(--blush);
+  background:color-mix(in srgb, var(--blush-light) 45%, var(--paper))}
+.callout--sage{border-left-color:var(--sage);
+  background:color-mix(in srgb, var(--sage-light) 45%, var(--paper))}
+.callout p:last-child{margin-bottom:0}
+.callout-label{font-family:var(--font-retro);font-size:.58rem;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--warm-600);margin-bottom:6px}
+
+ul{margin:0 0 14px;padding-left:1.1rem}
+li{margin:0 0 6px;font-size:.9rem;line-height:1.6}
+
+.footer{margin-top:80px;padding-top:24px;border-top:1px solid var(--warm-200);
+  font-size:.8rem;color:var(--warm-600)}
+
+@media (max-width:900px){
+  .sidebar{display:none}
+  .mobile-nav{display:flex;gap:14px;position:sticky;top:0;z-index:5;
+    background:var(--paper);border-bottom:1px solid var(--warm-200);
+    padding:10px clamp(20px,4vw,56px);font-family:var(--font-retro);font-size:.58rem;
+    text-transform:uppercase;letter-spacing:.1em;overflow-x:auto}
+  .mobile-nav a{color:var(--warm-600);text-decoration:none;white-space:nowrap}
+  .main{padding:28px clamp(20px,4vw,56px) 80px}
+  .conceptgrid{grid-template-columns:1fr}
+  .defrow{grid-template-columns:1fr;gap:2px}
+}
+</style>
+</head>
+<body>
+<nav class="mobile-nav"><a href="#what">is</a><a href="#out">out</a><a href="#jobs">workflows</a><a href="#tools">tools</a><a href="#use">it</a><a href="#repo">repo</a><a href="#not">do</a><a href="#open">open</a></nav>
+<div class="shell">
+<aside class="sidebar">
+  <div class="sidebar-title">Contents</div>
+  <a class="sidebar-link" href="#what">What it is</a>
+  <a class="sidebar-link" href="#out">What comes out</a>
+  <a class="sidebar-link" href="#jobs">The four workflows</a>
+  <a class="sidebar-link" href="#tools">The five tools</a>
+  <a class="sidebar-link" href="#use">How to use it</a>
+  <a class="sidebar-link" href="#repo">What is in the repo</a>
+  <a class="sidebar-link" href="#not">What it will not do</a>
+  <a class="sidebar-link" href="#open">Still open</a>
+  <div class="sidebar-title" style="margin-top:26px">In the repo</div>
+  <div class="sidebar-link" style="cursor:default">README.md</div>
+  <div class="sidebar-link" style="cursor:default">TODO.md</div>
+  <div class="sidebar-link" style="cursor:default">readthrough/README.md</div>
+</aside>
+<main class="main"><div class="inner">
+
+<header class="header">
+  <div class="header-label">Video tools</div>
+  <h1 class="header-title">Five tools that read a recording so you do not have to watch it twice</h1>
+  <p class="header-sub">Six tools that read and cut video. Each runs on its own, on any video, and none of them knows about a particular show or client.</p>
+</header>
+
+<section class="section" id="what">
+<div class="section-label">01 · The problem</div>
+<h2 class="section-title">What it is</h2>
+<p>You have three hours of footage and forty seconds of it are worth posting. Finding
+which forty seconds means watching all of it, and watching it again when somebody asks
+for a different clip.</p>
+<p>These tools do the parts a machine can measure. <span class="hl">They measure,
+they narrow, and they never choose.</span> Geometry comes off pixels, loudness off the
+file, cut points off the waveform. What is worth saying stays yours.</p>
+<div class="callout callout--sage">
+  <div class="callout-label">The thing that comes out</div>
+  <p><code>readthrough.html</code></p><p class="concept-body" style="margin-top:6px">One page
+  saying who was up, when, what each stretch was about, and the lines worth cutting, with
+  the frames embedded. Opens by double-clicking.</p>
+</div>
+</section>
+
+<section class="section" id="out">
+<div class="section-label">02 · The shape</div>
+<h2 class="section-title">What comes out</h2>
+<p>Every workflow ends in a file you can open. None of them needs a server and none of
+them uploads anything.</p>
+<div class="deflist"><div class="defrow"><div class="defkey">readthrough.html</div><div class="defval">What is in a recording: who was up, when, what each stretch was about, and the lines worth cutting. One file with the stills embedded. <span class="hl--sky">readthrough</span></div></div><div class="defrow"><div class="defkey">stills, and a page to pick them on</div><div class="defval">Full-resolution frames pulled at the moments that scored, plus one crop per subject at a feed shape. A single HTML page comes with them showing every one, grouped and filterable, click through to full size, so you choose by looking instead of scrubbing. A manifest beside them records what was analysed and what was dropped. <span class="hl--sky">stills</span></div></div><div class="defrow"><div class="defkey">moments.json</div><div class="defval">Every moment found, with the sentence it matched and the kinds that were looked for and not found. <span class="hl--sky">readthrough</span></div></div><div class="defrow"><div class="defkey">a plan, then a render</div><div class="defval">The plan is committed as the record. The render is disposable because the plan is not. <span class="hl--sky">shorts</span></div></div><div class="defrow"><div class="defkey">proof.png</div><div class="defval">One frame of a cut, before the whole thing renders. The check that catches an empty panel. <span class="hl--sky">shorts</span></div></div></div>
+</section>
+
+<section class="section" id="jobs">
+<div class="section-label">03 · The jobs</div>
+<h2 class="section-title">The four workflows</h2>
+<p>A tool does one measurable thing. A workflow is the order to do them in, plus the
+judgement that is not in a JSON file. 2 of the four run end to end.</p>
+<div class="conceptgrid"><div class="concept"><div class="concept-title">readthrough <span class="concept-status concept-status--settled">runs</span></div>
+  <p class="concept-body">Read a whole recording and say what is in it and what is worth cutting.</p></div><div class="concept"><div class="concept-title">tighten <span class="concept-status concept-status--settled">runs</span></div>
+  <p class="concept-body">Remove dead air and verified filler from any talking-head video. Nothing is chosen, reordered or rewritten.</p></div><div class="concept"><div class="concept-title">feature-cut <span class="concept-status concept-status--open">not general</span></div>
+  <p class="concept-body">Cut one person's segment out of a recorded show and hand it over. Calls tighten.</p></div><div class="concept"><div class="concept-title">composition <span class="concept-status concept-status--open">blocked</span></div>
+  <p class="concept-body">Build a cut to a spine a person wrote.</p></div></div>
+<p class="subsection-title">Where a person sits</p>
+<p>The full flow through the pipeline is twelve steps and seven of them are a person: saying what the source is and who is in it, looking at the proposed start, watching the feature, and sending it. Nothing here sends anything.</p>
+</section>
+
+<section class="section" id="tools">
+<div class="section-label">04 · The parts</div>
+<h2 class="section-title">The five tools</h2>
+<p>Each runs on its own, on any video, and none of them knows about a particular show or
+client. Each folder holds a <code>README.md</code> for a person and a <code>SKILL.md</code>
+for an agent.</p>
+<div class="deflist"><div class="defrow"><div class="defkey">transcribe</div><div class="defval">A caption file from a recording that arrived with none. <span class="hl--sky">a video file in, a .vtt out</span></div></div><div class="defrow"><div class="defkey">readthrough</div><div class="defval">Read a whole recording and say what is in it: who was up, when, and where the demo was. <span class="hl--sky">captions, and the AI's read of the whole transcript in, an HTML page out</span></div></div><div class="defrow"><div class="defkey">shorts</div><div class="defval">Talk footage in, a vertical Short out. <span class="hl--sky">a source video and a plan in, a rendered 1080x1920 clip out</span></div></div><div class="defrow"><div class="defkey">tighten</div><div class="defval">Shorten a take without changing what it says. <span class="hl--sky">a clip in, the same clip, shorter out</span></div></div><div class="defrow"><div class="defkey">stills</div><div class="defval">Photographs out of a recording. <span class="hl--sky">a video in, images, and a page to pick them on out</span></div></div><div class="defrow"><div class="defkey">loudness</div><div class="defval">Get a render to the loudness it should be. <span class="hl--sky">any video or audio file in, the same file, on target out</span></div></div></div>
+</section>
+
+<section class="section" id="use">
+<div class="section-label">05 · Getting going</div>
+<h2 class="section-title">How to use it</h2>
+<div class="step"><div class="step-number">01</div><div class="step-text">
+  <strong>Install what they share</strong>
+  <code>ffmpeg and ffprobe on PATH, then pip install -r requirements.txt inside the tool you want. loudness needs node instead of Python.</code> python dist/&lt;tool&gt;/check_install.py prints one line per requirement and exits 1 if anything is missing.
+</div></div><div class="step"><div class="step-number">02</div><div class="step-text">
+  <strong>Get captions for your video</strong>
+  <code>Any transcriber that writes VTT. Normalise the audio to about -16 LUFS first.</code> faster-whisper returns nothing at all on source-level audio around -34 dBFS. Silence in, silence out, no error.
+</div></div><div class="step"><div class="step-number">03</div><div class="step-text">
+  <strong>Read the recording</strong>
+  <code>python readthrough/scripts/run.py --captions C.vtt --video IN.mp4 --style-from PARENT.html</code> It ends with an HTML page or it exits non-zero. There is no third outcome.
+</div></div><div class="step"><div class="step-number">04</div><div class="step-text">
+  <strong>Pick your cuts and build them</strong>
+  <code>Write a plan naming your source, segments and reasons. Then shorts/scripts/build_short.py.</code> Proof frame before film: --proof 0 --at 2.0 --out proof.png. Look at it.
+</div></div>
+<p>The shortest useful thing: point run.py at a caption file and a frame to borrow a stylesheet from, leave off --video, and you get a page in under a minute with no pictures on it.</p>
+</section>
+
+<section class="section" id="repo">
+<div class="section-label">06 · The map</div>
+<h2 class="section-title">What is in the repo</h2>
+<p>Two folders. <code>video-tools</code> holds the tools and is what becomes the repo.
+<code>video-processing-pipeline</code> is where they get run on real recordings.</p>
+<div class="deflist"><div class="defrow"><div class="defkey">inbox/</div><div class="defval">Video arrives here and nothing here has been touched.</div></div><div class="defrow"><div class="defkey">runs/</div><div class="defval">One folder per run, holding what that run measured and produced.</div></div><div class="defrow"><div class="defkey">outbox/</div><div class="defval">Assembled and ready to send. One folder per person.</div></div><div class="defrow"><div class="defkey">experiments/</div><div class="defval">Tests of the pipeline. Nothing in here is sent to anyone.</div></div><div class="defrow"><div class="defkey">workflows/</div><div class="defval">How the work is done. One folder per job, each with its own SKILL.md.</div></div><div class="defrow"><div class="defkey">versions/</div><div class="defval">The method. No video in here.</div></div></div>
+<p>A tool is built in the pipeline's _build/ while it is specific to one programme, and moves out to video-tools once nothing in it names a show. loudness moved 2026-09-05, stills 2026-09-06, the readthrough page builder 2026-09-07.</p>
+</section>
+
+<section class="section" id="not">
+<div class="section-label">07 · Limits</div>
+<h2 class="section-title">What it will not do</h2>
+<p>It does not say who is speaking. A name is read out of the sentence beside it and
+travels with that sentence, because a transcript returns words and not speakers.
+a host's surname misheard, and a guest's name split into three. A name read by any tool here is a reading of a sentence, never a fact about who is speaking.</p>
+<p>It cannot place a cut. Every time is a caption timing, wrong by tens of milliseconds.
+A cut point has to land inside measured silence.</p>
+<div class="callout callout--blush">
+  <div class="callout-label">And it publishes nothing</div>
+  <p>These tools write files. No upload, no post, no push. What leaves an account is your decision, per action.</p>
+</div>
+</section>
+
+<section class="section" id="open">
+<div class="section-label">08 · Still open</div>
+<h2 class="section-title">Still open</h2>
+<div class="deflist"><div class="defrow"><div class="defkey">Candidate selection, the general case</div><div class="defval">Nothing reads a transcript and proposes which forty seconds to cut. readthrough narrows it to a page of lines. The choosing is yours.</div></div><div class="defrow"><div class="defkey">The full-length edit</div><div class="defval">The episode with the dead parts removed.</div></div><div class="defrow"><div class="defkey">Compositions</div><div class="defval">Longer pieces assembled from clips that already exist.</div></div><div class="defrow"><div class="defkey">Splitting a video into its speakers</div><div class="defval">Third of the three workflows. Not started.</div></div><div class="defrow"><div class="defkey">Any audience measurement</div><div class="defval">Nothing has been posted, so every claim about what makes a cut land is a hypothesis.</div></div></div>
+<p class="np np--top">This page is written, not scanned. Change a tool, change
+<code>datasets/system.json</code>, rebuild.</p>
+</section>
+
+</div></main>
+</div>
+<!-- Cuts Layout Audit v1 · dev-only second look · self-suppresses off file://localhost · strip between markers to publish -->
+<script>
+// --- Cuts Layout Audit v1 ---
+(function () {
+  var IS_PROBE = location.hash.indexOf('__audit-probe') !== -1;
+  var ACTIVE = IS_PROBE
+    || location.protocol === 'file:'
+    || location.hostname === 'localhost'
+    || location.hostname === '127.0.0.1'
+    || /[?&]audit\b/.test(location.search);
+  if (!ACTIVE) return;
+  var TOL = 1;
+  function shortSelector(el) {
+    if (!el || el === document.body) return 'body';
+    if (el.id) return el.tagName.toLowerCase() + '#' + el.id;
+    var sel = el.tagName.toLowerCase();
+    if (el.classList && el.classList.length) sel += '.' + el.classList[0];
+    var p = el.parentElement;
+    if (p) { var sib = Array.prototype.filter.call(p.children, function (c) { return c.tagName === el.tagName; }); if (sib.length > 1) sel += ':nth-of-type(' + (sib.indexOf(el) + 1) + ')'; }
+    return sel;
+  }
+  function audit(widthLabel) {
+    var findings = [], docEl = document.documentElement, vw = window.innerWidth;
+    if (docEl.scrollWidth > docEl.clientWidth + TOL) findings.push({ kind: 'page-overflow', severity: 'error', selector: 'html', px: docEl.scrollWidth - docEl.clientWidth, note: 'Document is wider than the viewport.' });
+    var all = document.body ? document.body.querySelectorAll('*') : [];
+    for (var i = 0; i < all.length; i++) {
+      var el = all[i];
+      if (el.closest && el.closest('#cuts-layout-audit, #cuts-audit-probe, [data-audit-ignore]')) continue;
+      var cs = getComputedStyle(el);
+      if (cs.display === 'none' || cs.visibility === 'hidden') continue;
+      var r = el.getBoundingClientRect();
+      if (r.width === 0 && r.height === 0) continue;
+      if (r.right > vw + TOL && r.left < vw) { var par = el.parentElement, parRight = par ? par.getBoundingClientRect().right : vw; if (parRight <= vw + TOL) findings.push({ kind: 'element-overflow', severity: 'error', selector: shortSelector(el), px: Math.round(r.right - vw), note: 'Extends ' + Math.round(r.right - vw) + 'px past the right edge.' }); }
+      var ox = cs.overflowX, oy = cs.overflowY;
+      var clipX = (ox === 'hidden' || ox === 'clip') && el.scrollWidth > el.clientWidth + TOL;
+      var clipY = (oy === 'hidden' || oy === 'clip') && el.scrollHeight > el.clientHeight + TOL;
+      if ((clipX || clipY) && el.textContent && el.textContent.trim().length > 1) { var ellipsis = cs.textOverflow === 'ellipsis' && cs.whiteSpace === 'nowrap'; if (!ellipsis) findings.push({ kind: 'clipped-text', severity: 'warning', selector: shortSelector(el), px: Math.round(Math.max(el.scrollWidth - el.clientWidth, el.scrollHeight - el.clientHeight)), note: 'Text clipped by overflow:' + (clipX ? ox : oy) + '.' }); }
+    }
+    return { width: widthLabel || (vw + 'px'), findings: findings.slice(0, 40), total: findings.length };
+  }
+  if (IS_PROBE) { var reportUp = function () { try { parent.postMessage({ __cutsAudit: true, result: audit('375px') }, '*'); } catch (e) {} }; if (document.readyState === 'complete') setTimeout(reportUp, 60); else window.addEventListener('load', function () { setTimeout(reportUp, 60); }); return; }
+  var results = { current: null, mobile: null };
+  function build() {
+    var css = '#cuts-layout-audit{position:fixed;left:12px;bottom:12px;z-index:2147483600;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;display:none}'
+      + '#cuts-layout-audit .la-pill{cursor:pointer;border:none;border-radius:999px;padding:7px 13px;font-size:12px;font-weight:700;color:#fff;box-shadow:0 3px 12px rgba(0,0,0,.28)}'
+      + '#cuts-layout-audit .la-pill.err{background:#9a1b1b}#cuts-layout-audit .la-pill.warn{background:#8a5a0a}'
+      + '#cuts-layout-audit .la-panel{display:none;margin-top:8px;max-width:min(92vw,440px);max-height:50vh;overflow:auto;background:#0d1117;color:#d8e0ea;border-radius:10px;padding:10px 12px;box-shadow:0 8px 28px rgba(0,0,0,.4);font-size:11.5px;line-height:1.5}'
+      + '#cuts-layout-audit.open .la-panel{display:block}'
+      + '#cuts-layout-audit .la-row{padding:7px 0;border-top:1px solid #222b36}#cuts-layout-audit .la-row:first-child{border-top:none}'
+      + '#cuts-layout-audit .la-kind{font-weight:700;color:#fff}#cuts-layout-audit .la-error .la-kind{color:#f08a8a}#cuts-layout-audit .la-warning .la-kind{color:#f0b46a}'
+      + '#cuts-layout-audit .la-w{margin-left:6px;color:#7e8a99}'
+      + '#cuts-layout-audit .la-sel{display:block;margin:2px 0;color:#cfe3ff;word-break:break-all}'
+      + '#cuts-layout-audit .la-note{color:#aab4c0}';
+    var style = document.createElement('style'); style.textContent = css; document.head.appendChild(style);
+    var wrap = document.createElement('div'); wrap.id = 'cuts-layout-audit';
+    wrap.innerHTML = '<button class="la-pill" type="button" aria-label="Layout issues"></button><div class="la-panel"><div class="la-list"></div></div>';
+    document.body.appendChild(wrap);
+    wrap.querySelector('.la-pill').addEventListener('click', function () { wrap.classList.toggle('open'); });
+    return wrap;
+  }
+  function render() {
+    var all = [];
+    if (results.current) results.current.findings.forEach(function (f) { f._w = results.current.width; all.push(f); });
+    if (results.mobile) results.mobile.findings.forEach(function (f) { f._w = '375px'; all.push(f); });
+    var errors = all.filter(function (f) { return f.severity === 'error'; });
+    var warns = all.filter(function (f) { return f.severity === 'warning'; });
+    var badge = document.getElementById('cuts-layout-audit');
+    if (!all.length) { if (badge) badge.style.display = 'none'; console.info('%cLayout audit: clean', 'color:#1f5028;font-weight:bold'); return; }
+    if (!badge) badge = build();
+    badge.style.display = 'block';
+    var pill = badge.querySelector('.la-pill');
+    pill.textContent = (errors.length ? '⚠ ' : '⚡ ') + errors.length + ' error' + (errors.length === 1 ? '' : 's') + (warns.length ? ' · ' + warns.length + ' warn' : '');
+    pill.className = 'la-pill ' + (errors.length ? 'err' : 'warn');
+    var list = badge.querySelector('.la-list'); list.innerHTML = '';
+    all.forEach(function (f) {
+      var row = document.createElement('div'); row.className = 'la-row la-' + f.severity;
+      row.innerHTML = '<span class="la-kind"></span><span class="la-w"></span><code class="la-sel"></code><span class="la-note"></span>';
+      row.querySelector('.la-kind').textContent = f.kind;
+      row.querySelector('.la-w').textContent = '@' + f._w;
+      row.querySelector('.la-sel').textContent = f.selector;
+      row.querySelector('.la-note').textContent = (f.px ? f.px + 'px · ' : '') + f.note;
+      list.appendChild(row);
+    });
+    console.warn('Layout audit: ' + errors.length + ' error(s), ' + warns.length + ' warning(s)');
+    try { console.table(all.map(function (f) { return { kind: f.kind, severity: f.severity, width: f._w, px: f.px, selector: f.selector }; })); } catch (e) {}
+  }
+  function runMain() {
+    results.current = audit(window.innerWidth + 'px'); render();
+    if (window.innerWidth > 400 && !document.getElementById('cuts-audit-probe')) {
+      var f = document.createElement('iframe'); f.id = 'cuts-audit-probe'; f.setAttribute('aria-hidden', 'true');
+      f.style.cssText = 'position:absolute;left:-10000px;top:0;width:375px;height:900px;border:0;visibility:hidden';
+      f.src = location.href.split('#')[0] + '#__audit-probe'; document.body.appendChild(f);
+    }
+  }
+  window.addEventListener('message', function (e) { if (e.data && e.data.__cutsAudit && e.data.result) { results.mobile = e.data.result; render(); } });
+  var rt; window.addEventListener('resize', function () { clearTimeout(rt); rt = setTimeout(function () { results.current = audit(window.innerWidth + 'px'); render(); }, 250); });
+  if (document.readyState === 'complete') setTimeout(runMain, 80); else window.addEventListener('load', function () { setTimeout(runMain, 80); });
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { setTimeout(function () { results.current = audit(window.innerWidth + 'px'); render(); }, 50); });
+})();
+// --- end Cuts Layout Audit v1 ---
+</script>
+</body>
+</html>

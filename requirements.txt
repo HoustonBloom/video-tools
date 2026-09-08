@@ -1,0 +1,11 @@
+# Python side. ffmpeg and ffprobe are separate and must be on PATH.
+#
+# Versions are the ones this was built and measured against on 2026-08-28,
+# not floors. opencv 5.0 matters: it dropped CascadeClassifier and ships no
+# cascade files, so subject location here uses motion, not faces.
+opencv-python-headless==5.0.0.93
+numpy==2.4.4
+
+# faster-whisper is not here on purpose. Only two tools need it, transcribe/
+# and shorts/, and each carries it in its own requirements.txt, so someone who
+# arrives with captions never downloads a speech model.

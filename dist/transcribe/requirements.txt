@@ -1,0 +1,5 @@
+# Python side. ffmpeg must be on PATH.
+#
+# The version this was built and measured against on 2026-09-07, not a floor.
+# It is the same pin as shorts/, so one install serves both.
+faster-whisper==1.2.1

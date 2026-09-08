@@ -1,0 +1,107 @@
+/* Vendored from a cut-proposals page built 2026-08-28: the show timeline, the segment links, the featured-founder
+   block and its quote cards. Lifted rule for rule, then the token names that
+   page used are aliased onto the First Look sheet beside this file, so one
+   palette runs the whole page. Nothing else is authored here. */
+
+.cp {
+  --card: var(--paper);
+  --muted: var(--paper-warm);
+  --muted-foreground: var(--ink-faint);
+  --warm-200: var(--rule);
+  --warm-600: var(--ink-soft);
+  --accent: var(--sage);
+  --accent-strong: var(--sage-deep);
+  --lavender: #c4b5fd;
+  --radius: 6px;
+}
+
+/* The timeline */
+.cp .tl-track { position:relative; height:38px; background:var(--muted); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:2px 2px 0 var(--ink); margin:18px 0 6px; }
+.cp .tl-seg { position:absolute; top:0; height:100%; background:var(--warm-200); border-right:1px solid var(--ink); display:flex; align-items:center; justify-content:center; text-decoration:none; overflow:hidden; }
+.cp .tl-seg:first-child { border-radius:4px 0 0 4px; }
+.cp .tl-seg span { font-family:var(--font-mono); font-size:11px; font-weight:700; color:var(--ink); white-space:nowrap; }
+.cp .tl-seg:hover { outline:2px solid var(--ink); outline-offset:-2px; z-index:2; }
+.cp .tl-seg.has { background:var(--sage); }
+.cp .tl-seg.featured { background:var(--butter); }
+.cp .tl-seg.guest { background:var(--sky); }
+.cp .tl-marks { position:relative; height:14px; margin:0 0 4px; }
+.cp .tl-mark { position:absolute; top:0; width:3px; height:14px; background:var(--ink); border-radius:1px; }
+.cp .tl-mark.demo { background:var(--sage-deep); height:14px; }
+.cp .tl-mark.sponsor { background:var(--butter-deep); }
+.cp .tl-mark.dim { opacity:0.18; }
+.cp .tl-scale { display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10px; color:var(--muted-foreground); }
+.cp .tl-key { font-family:var(--font-mono); font-size:10.5px; color:var(--muted-foreground); margin-top:10px; display:flex; align-items:center; gap:7px; flex-wrap:wrap; }
+.cp .tl-key i { display:inline-block; width:16px; height:11px; border:1.5px solid var(--ink); }
+.cp .k-has { background:var(--sage); }
+.cp .k-featured { background:var(--butter); }
+.cp .k-guest { background:var(--sky); }
+.cp .k-mark { width:3px; background:var(--ink); border:none; }
+.cp .k-demo { width:3px; background:var(--sage-deep); border:none; }
+
+/* The filters */
+.cp .filters { display:flex; flex-wrap:wrap; gap:8px; margin:14px 0 4px; }
+.cp .filter { font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; text-transform:uppercase; padding:6px 10px; border:1.5px solid var(--ink); border-radius:3px; background:var(--muted); color:var(--ink); cursor:pointer; }
+.cp .filter b { font-weight:700; margin-left:6px; }
+.cp .filter.zero { color:var(--muted-foreground); border-style:dashed; }
+.cp .filter.on { background:var(--ink); color:var(--paper); }
+.cp .filter-note { font-family:var(--font-mono); font-size:10.5px; color:var(--muted-foreground); margin-top:8px; }
+.cp .moments { display:grid; gap:6px; margin-top:12px; }
+.cp .moment { display:grid; grid-template-columns:64px 1fr; gap:12px; padding:8px 12px; border:1.5px solid var(--warm-200); border-radius:4px; background:var(--card); font-size:0.875rem; line-height:1.4; }
+.cp .moment .at { font-family:var(--font-mono); font-size:11px; font-weight:700; }
+.cp .moment .k { font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--accent-strong); margin-right:6px; }
+.cp .moment.hide { display:none; }
+
+/* The segment links. The source page put the duration in a left column and
+   the text in a right one, and on a phone that left an empty column beside a
+   narrow paragraph, with a coloured left border inside the black one, which
+   read as a double line. One column, one border, the kind said in words. */
+.cp .links { display:grid; grid-template-columns:repeat(auto-fit,minmax(290px,1fr)); gap:12px; margin-top:18px; }
+.cp .link { display:block; padding:14px 16px; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:2px 2px 0 var(--ink); text-decoration:none; color:var(--ink); }
+.cp .link:hover { transform:translate(-1px,-1px); box-shadow:3px 3px 0 var(--ink); }
+.cp .link-name { display:block; font-family:var(--font-display); font-weight:700; font-size:1rem; line-height:1.25; }
+.cp .link-meta { display:block; font-family:var(--font-mono); font-size:10.5px; letter-spacing:0.06em; color:var(--accent-strong); margin:6px 0 8px; }
+.cp .link-desc { display:block; font-size:0.875rem; line-height:1.5; color:var(--warm-600); }
+
+/* The people */
+.cp .founder { margin-bottom:22px; padding:16px 18px; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:3px 3px 0 var(--ink); }
+.cp .founder h3 { font-family:var(--font-display); font-weight:800; font-size:1.4rem; letter-spacing:-0.02em; margin-bottom:8px; }
+.cp .founder h3 em { font-style:normal; color:var(--accent-strong); }
+.cp .founder-top { display:grid; grid-template-columns:220px 1fr; gap:18px; align-items:start; }
+.cp .founder-top img { width:100%; border:2px solid var(--ink); border-radius:var(--radius); display:block; }
+.cp .kicker-sm { font-family:var(--font-mono); font-size:10px; letter-spacing:0.12em; text-transform:uppercase; color:var(--warm-600); margin-bottom:6px; }
+.cp .lede-sm { font-size:0.9375rem; line-height:1.55; color:var(--warm-600); max-width:62ch; }
+.cp .split { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:16px; }
+.cp .qcard { padding:14px 16px; background:var(--card); border:2px solid var(--ink); border-radius:var(--radius); box-shadow:3px 3px 0 var(--ink); break-inside:avoid; }
+.cp .qcard h4 { font-family:var(--font-display); font-weight:700; font-size:0.9375rem; margin-bottom:9px; }
+/* The source page tinted each quote card with a coloured left border. Inside
+   the black border that read as a double line, so the tint is gone
+   and the quote's own bar is the one accent. */
+.cp .q { margin:0 0 12px; }
+.cp .q blockquote { font-family:var(--font-display); font-weight:600; font-size:1rem; line-height:1.4; letter-spacing:-0.01em; padding-left:14px; border-left:4px solid var(--accent); margin:0; }
+.cp .q figcaption { font-family:var(--font-mono); font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--warm-600); margin-top:6px; padding-left:18px; }
+.cp .chip { font-family:var(--font-mono); font-size:9.5px; letter-spacing:0.07em; text-transform:uppercase; padding:4px 8px; border:1.5px solid var(--ink); border-radius:3px; background:var(--muted); }
+.cp .marks { margin-top:12px; font-size:0.8125rem; color:var(--warm-600); }
+.cp .marks li { margin:3px 0; }
+.cp .marks .at { font-family:var(--font-mono); font-weight:700; color:var(--ink); margin-right:8px; }
+
+/* The not-read state */
+.cp .unread { padding:18px 20px; border:2px dashed var(--ink); border-radius:var(--radius); background:var(--butter-soft); }
+.cp .unread h3 { font-family:var(--font-display); font-weight:800; margin-bottom:8px; }
+.cp .unread pre { white-space:pre-wrap; font-family:var(--font-mono); font-size:12px; line-height:1.5; background:var(--paper); border:1.5px solid var(--ink); padding:12px; border-radius:4px; margin-top:10px; }
+
+@media (max-width: 599px) {
+  .cp .stats { grid-template-columns:1fr 1fr; gap:10px; }
+  .cp .stat .num { font-size:1.5rem; }
+}
+
+@media (max-width: 640px) {
+  .cp .founder-top, .cp .split, .cp .links { grid-template-columns:1fr; }
+  .cp .founder-top img { max-width:100%; }
+  .cp .founder { padding:14px; }
+  .cp .founder h3 { font-size:1.25rem; }
+  .cp .qcard { padding:12px 14px; }
+  .cp .q blockquote { font-size:0.9375rem; }
+  .cp .tl-seg span { font-size:9px; }
+  .cp .moment { grid-template-columns:52px 1fr; gap:8px; padding:8px 10px; }
+  .cp .filter { padding:5px 8px; }
+}

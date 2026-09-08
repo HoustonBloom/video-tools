@@ -1,0 +1,50 @@
+# Media never goes in this repo.
+# A master can be 15GB on its own. Sources live beside the footage in
+# the workspace; this repo holds the tools that read them.
+*.mp4
+*.mov
+*.m4v
+*.mkv
+*.webm
+*.avi
+*.wav
+*.mp3
+*.m4a
+*.aac
+*.flac
+*.srt
+*.ass
+# Captions carry what people said, word for word, with their names in it.
+*.vtt
+*.sbv
+*.json.transcript
+
+# Renders, proofs and scratch. Regenerate them from a plan instead of storing them.
+renders/
+proofs/
+out/
+tmp/
+*.proof.png
+
+# Plans are kept, because a plan is the record of a framing decision.
+# Nothing to ignore under plans/.
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# OS
+Thumbs.db
+desktop.ini
+.DS_Store
+
+# Superseded versions are kept outside the repo and do not travel.
+_deprecated/
+
+# The test fixtures are verbatim captions of named people, and the expectations
+# record their names and phrases. Neither ships. run_tests.py does.
+readthrough/tests/fixtures/
+readthrough/tests/expected.json

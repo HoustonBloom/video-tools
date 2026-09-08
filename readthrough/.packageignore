@@ -1,0 +1,4 @@
+# The fixtures are verbatim transcript excerpts of real people speaking at real
+# events: named founders, an audience, a facilitator. They make the tests honest
+# and they are not ours to ship. The package carries the tool; the tests stay here.
+tests/

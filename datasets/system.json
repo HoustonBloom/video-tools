@@ -1,0 +1,557 @@
+{
+  "_about": "What every tool here is for and how they fit together, written for a person who has never seen this repo. This file holds the facts. build_system_page.mjs turns it into system.html and decides nothing about content.",
+  "_rule": "Change a tool, change this file, rebuild. Nothing else maintains it. It is a rule rather than a scanner because a scan can tell you a file exists and cannot tell you what it is for.",
+  "_hierarchy": "The card is the glance and the panel is the depth. If a fact is on a card, a person reading five cards has to read it five times. Put it in the panel.",
+  "updated": "2026-09-07",
+  "title": "The video tools",
+  "lede": "Six tools that read and cut video. Each runs on its own, on any video, and none of them knows about a particular show or client.",
+  "start_here": {
+    "heading": "Start here",
+    "steps": [
+      {
+        "n": 1,
+        "do": "Install what they share",
+        "how": "ffmpeg and ffprobe on PATH, then pip install -r requirements.txt inside the tool you want. loudness needs node instead of Python.",
+        "check": "python dist/<tool>/check_install.py prints one line per requirement and exits 1 if anything is missing."
+      },
+      {
+        "n": 2,
+        "do": "Get captions for your video",
+        "how": "Any transcriber that writes VTT. Normalise the audio to about -16 LUFS first.",
+        "check": "faster-whisper returns nothing at all on source-level audio around -34 dBFS. Silence in, silence out, no error."
+      },
+      {
+        "n": 3,
+        "do": "Read the recording",
+        "how": "python readthrough/scripts/run.py --captions C.vtt --video IN.mp4 --style-from PARENT.html",
+        "check": "It ends with an HTML page or it exits non-zero. There is no third outcome."
+      },
+      {
+        "n": 4,
+        "do": "Pick your cuts and build them",
+        "how": "Write a plan naming your source, segments and reasons. Then shorts/scripts/build_short.py.",
+        "check": "Proof frame before film: --proof 0 --at 2.0 --out proof.png. Look at it."
+      }
+    ],
+    "first_run": "The shortest useful thing: point run.py at a caption file and a frame to borrow a stylesheet from, leave off --video, and you get a page in under a minute with no pictures on it."
+  },
+  "principles": [
+    {
+      "title": "The plan is the deliverable",
+      "body": "Every cutting and framing decision lives in a JSON file naming its source, its segments and its reasons. A render is disposable because its plan is not. A clip whose plan is lost is a clip nobody can explain."
+    },
+    {
+      "title": "Measured, not eyeballed",
+      "body": "Geometry off pixels. Loudness off the file. Cut points off the waveform at 20ms, never off transcript timings, which are wrong by tens of milliseconds and will slice the middle of a word."
+    },
+    {
+      "title": "It proposes, you choose",
+      "body": "Nothing here decides what is worth cutting. The tools narrow three hours to a page of candidates, and every one of them stays a candidate."
+    },
+    {
+      "title": "Nothing is published",
+      "body": "These tools write files. No upload, no post, no push. What leaves an account is your decision, per action."
+    }
+  ],
+  "tools": [
+    {
+      "id": "transcribe",
+      "name": "transcribe",
+      "one_line": "A caption file from a recording that arrived with none.",
+      "shape": "tool",
+      "in": "A video file",
+      "out": "A .vtt",
+      "reach_for_it": "Somebody handed you a recording as a file and nothing is beside it.",
+      "packaged": "transcribe.zip",
+      "needs": "Python, faster-whisper, ffmpeg",
+      "run": "python scripts/transcribe.py --video IN.mp4 --out captions.vtt",
+      "panel": [
+        "The step before readthrough now that nothing is fetched from a platform: a recording arrives as a file from whoever owns it, and a file has no captions.",
+        "Reuses the three traps make_captions.py paid for: audio lifted to -16 LUFS before the model hears it, repetition loops damped, phantom words in silence filtered.",
+        "Names no speakers and invents no words. Proper nouns are the least reliable part; read them against the tape.",
+        "Added for the first recording to arrive as a file with no captions, a 1:11 talk."
+      ]
+    },
+    {
+      "id": "readthrough",
+      "name": "readthrough",
+      "one_line": "Read a whole recording and say what is in it: who was up, when, and where the demo was.",
+      "shape": "workflow",
+      "in": "Captions, and the AI's read of the whole transcript",
+      "out": "An HTML page",
+      "reach_for_it": "Somebody handed you two hours of footage and nobody has watched it.",
+      "packaged": "readthrough.zip",
+      "needs": "Python, plus node for the page step",
+      "run": "python scripts/run.py --captions C.vtt --video IN.mp4 --out-dir inbox/x --title \"...\"",
+      "panel": [
+        "Four steps, each writing a file the next one reads: find_moments.py matches phrases; the AI reads the whole transcript against a checklist and writes segments.json; pick_turn_stills.py picks a frame per segment; build_readthrough.mjs writes the page.",
+        "The read is a step no script can take. A host who introduces a guest in words the pattern list does not carry produces no boundary, and the page goes out with the guest missing.",
+        "The page is a cut-proposals page: filters for every kind looked for with zeros shown, the show as a timeline with one block per segment, the guest and the featured founders with a frame and their words, every moment in order, then ranked cards with a cut prompt each.",
+        "The only workflow of the six. It calls the stills tool and changes nothing about it.",
+        "The page is the objective. A run that writes JSON and stops exits non-zero. Without segments.json the page still builds and says at the top that the recording has not been read.",
+        "Tested by fixtures cut from real recordings, a guest speaker and featured founders among the answers. The fixtures do not ship; cut your own. Under two seconds."
+      ]
+    },
+    {
+      "id": "shorts",
+      "name": "shorts",
+      "one_line": "Talk footage in, a vertical Short out.",
+      "shape": "tool",
+      "in": "A source video and a plan",
+      "out": "A rendered 1080x1920 clip",
+      "reach_for_it": "You have an hour of talk and want forty seconds of it that stands alone.",
+      "packaged": "shorts-director.zip, 20 files",
+      "needs": "Python, ffmpeg, ffprobe",
+      "run": "python scripts/build_short.py plans/my-cut.json",
+      "panel": [
+        "The compositional pass: it chooses what to cut and what order to put it in.",
+        "Proof frame before film. A filter graph can return success over an empty panel, and has.",
+        "analyze_source.py maps where the composition changes. Seeking is the cost and it is not linear: mapping 5m30s starting 19 minutes into a 15GB master took 1m52s.",
+        "make_captions.py --review lists every word under the confidence floor. Captions run near 90% word accurate on this footage at the small model, counted by reading them against the tape. Nothing else has measured medium.",
+        "verify_short.py measures loudness, true peak, dimensions and the air after the last word. It cannot tell you the crop is aimed at the right person."
+      ]
+    },
+    {
+      "id": "tighten",
+      "name": "tighten",
+      "one_line": "Shorten a take without changing what it says.",
+      "shape": "tool",
+      "in": "A clip",
+      "out": "The same clip, shorter",
+      "reach_for_it": "A clip is right but slow.",
+      "packaged": "tightening-pass.zip, 8 files",
+      "needs": "Python, numpy, ffmpeg, ffprobe",
+      "run": "See tighten/SKILL.md for the run order",
+      "panel": [
+        "Dead air, long pauses, disfluencies, filler. Nothing chosen, nothing reordered, no word rewritten.",
+        "It proposes a removal only where both cut points land inside measured silence.",
+        "Of five candidates it found on real footage, four were words and one was an um. One of the four was a negation. Read every candidate before applying it.",
+        "faster-whisper does not transcribe disfluencies, so grepping a transcript for um returns zero however many are in the audio. These are found as short bursts at speech level with silence on both sides."
+      ]
+    },
+    {
+      "id": "stills",
+      "name": "stills",
+      "one_line": "Photographs out of a recording.",
+      "shape": "tool",
+      "in": "A video",
+      "out": "Images, and a page to pick them on",
+      "reach_for_it": "You need images from footage and do not want to scrub for them.",
+      "packaged": "stills.zip, 6 files",
+      "needs": "Python, opencv, numpy, ffmpeg, ffprobe",
+      "run": "python scripts/pick_stills.py --video IN.mp4 --out DIR --label \"Name\" --count 20",
+      "panel": [
+        "Three steps: pick which moments are worth a frame, reframe each to a feed shape with one crop per person in shot, render a page to choose from.",
+        "Scores sharpness, contrast, motion and how much of the frame the moving subject fills. Drops inserted slides, and writes every sampled frame's four numbers to the manifest, so a reader can find a slide section or a screen share by time.",
+        "No face detection. OpenCV 5 dropped the classifier and ships no cascade files, so a crop is a, b, c left to right and nobody is named.",
+        "Cut from the master, not a delivered copy. A high bitrate on a second-generation crop is a generous encoder, not detail.",
+        "On one real run, 22 of 180 shortlisted frames were rejected, every one by eye."
+      ]
+    },
+    {
+      "id": "loudness",
+      "name": "loudness",
+      "one_line": "Get a render to the loudness it should be.",
+      "shape": "tool",
+      "in": "Any video or audio file",
+      "out": "The same file, on target",
+      "reach_for_it": "Before handing over any render.",
+      "packaged": "loudness.zip, 3 files",
+      "needs": "Node, ffmpeg, ffprobe",
+      "run": "node scripts/loudness.mjs",
+      "panel": [
+        "One loudnorm pass does not land on target. It caps its gain at the true-peak ceiling and reports success, so the log says it worked and the file is still wrong.",
+        "Measured on this machine: one pass against a -16 LUFS target landed at -19.2.",
+        "So this measures the output and corrects until it is right."
+      ]
+    }
+  ],
+  "moments": {
+    "heading": "What the tools listen for",
+    "_about": "A moment is a point where something known happens. The kinds are rows in moment_kinds.py, and adding a kind is adding a row.",
+    "kinds": [
+      {
+        "id": "handoff",
+        "what": "The host hands over and says who is next."
+      },
+      {
+        "id": "self-intro",
+        "what": "Somebody says their own name. \"My name is\", or \"I'm\" and a word that could be a name."
+      },
+      {
+        "id": "invite-intro",
+        "what": "The host opens the floor for introductions."
+      },
+      {
+        "id": "to-room",
+        "what": "A question aimed at everybody."
+      },
+      {
+        "id": "sponsor",
+        "what": "Who paid for the room, said out loud."
+      },
+      {
+        "id": "what-this-is",
+        "what": "The recording describing itself."
+      },
+      {
+        "id": "closing",
+        "what": "The end, said out loud."
+      }
+    ],
+    "measured_on": [
+      {
+        "recording": "A gathering, 2026",
+        "runs": "2:56:21",
+        "format": "A lineup. A facilitator calls each speaker up by name.",
+        "counts": {
+          "handoff": 6,
+          "self-intro": 3,
+          "invite-intro": 0,
+          "to-room": 9,
+          "sponsor": 0,
+          "what-this-is": 0,
+          "closing": 4
+        }
+      },
+      {
+        "recording": "A talk show episode, conversation format",
+        "runs": "1:12:17",
+        "format": "A conversation, where people introduce themselves rather than being announced.",
+        "counts": {
+          "handoff": 0,
+          "self-intro": 7,
+          "invite-intro": 2,
+          "to-room": 1,
+          "sponsor": 1,
+          "what-this-is": 1,
+          "closing": 2
+        }
+      },
+      {
+        "recording": "A talk show episode, talk then couch",
+        "runs": "1:37:23",
+        "format": "A talk with a 48 second screen share at 26:51, then a round of founders introducing themselves.",
+        "counts": {
+          "handoff": 0,
+          "self-intro": 4,
+          "invite-intro": 1,
+          "to-room": 0,
+          "sponsor": 1,
+          "what-this-is": 1,
+          "closing": 0
+        }
+      }
+    ],
+    "why_it_matters": "None of the three lights up every kind, and a zero is an answer rather than a failure. An earlier version read only the handoff kind and reported a whole conversation-format episode as empty."
+  },
+  "folders": {
+    "heading": "Where everything lives",
+    "tree": [
+      {
+        "path": "video-tools/",
+        "depth": 0,
+        "note": "the tools, and what becomes the repo",
+        "kind": "root"
+      },
+      {
+        "path": "readthrough/",
+        "depth": 1,
+        "note": "workflow, 3 steps, has tests",
+        "kind": "tool"
+      },
+      {
+        "path": "shorts/",
+        "depth": 1,
+        "note": "tool",
+        "kind": "tool"
+      },
+      {
+        "path": "tighten/",
+        "depth": 1,
+        "note": "tool",
+        "kind": "tool"
+      },
+      {
+        "path": "stills/",
+        "depth": 1,
+        "note": "tool",
+        "kind": "tool"
+      },
+      {
+        "path": "loudness/",
+        "depth": 1,
+        "note": "tool",
+        "kind": "tool"
+      },
+      {
+        "path": "datasets/",
+        "depth": 1,
+        "note": "system.json, this page's source, written by hand",
+        "kind": "src"
+      },
+      {
+        "path": "dist/",
+        "depth": 1,
+        "note": "the six zips",
+        "kind": "out"
+      },
+      {
+        "path": "video-processing-pipeline/",
+        "depth": 0,
+        "note": "where the tools run on real recordings",
+        "kind": "root"
+      },
+      {
+        "path": "inbox/<recording>/",
+        "depth": 1,
+        "note": "captions, JSON, stills, the page",
+        "kind": "out"
+      },
+      {
+        "path": "runs/",
+        "depth": 1,
+        "note": "one folder per run",
+        "kind": "out"
+      },
+      {
+        "path": "outbox/",
+        "depth": 1,
+        "note": "assembled, ready to send",
+        "kind": "out"
+      },
+      {
+        "path": "experiments/",
+        "depth": 1,
+        "note": "tests, never sent",
+        "kind": "out"
+      },
+      {
+        "path": "workflows/",
+        "depth": 1,
+        "note": "one folder per job, each a SKILL.md",
+        "kind": "src"
+      },
+      {
+        "path": "versions/",
+        "depth": 1,
+        "note": "the method, no video",
+        "kind": "src"
+      },
+      {
+        "path": "_build/",
+        "depth": 1,
+        "note": "builders, still tied to one programme",
+        "kind": "src"
+      },
+      {
+        "path": "_activity/",
+        "depth": 1,
+        "note": "the dashboard builder",
+        "kind": "src"
+      },
+      {
+        "path": "_work/",
+        "depth": 1,
+        "note": "scratch",
+        "kind": "old"
+      }
+    ],
+    "each_tool_holds": [
+      {
+        "file": "README.md",
+        "who": "a person opening the folder"
+      },
+      {
+        "file": "SKILL.md",
+        "who": "an agent loading it as a skill"
+      },
+      {
+        "file": "scripts/",
+        "who": "the work"
+      },
+      {
+        "file": "requirements.txt",
+        "who": "pip, where there is a Python side"
+      },
+      {
+        "file": "tests/",
+        "who": "a change to a pattern, checked in 1.2 seconds. readthrough only."
+      }
+    ],
+    "how_they_relate": [
+      "The pipeline calls the tools by path. The tools name the pipeline nowhere in code.",
+      "A tool is built in the pipeline's _build/ while it is specific to one programme, and moves out to video-tools once nothing in it names a show. loudness moved 2026-09-05, stills 2026-09-06, the readthrough page builder 2026-09-07.",
+      "No tool imports another tool. readthrough runs the stills picker as a subprocess, so stills works identically on its own."
+    ],
+    "pipeline_rooms": [
+      {
+        "name": "inbox/",
+        "what": "Video arrives here and nothing here has been touched."
+      },
+      {
+        "name": "runs/",
+        "what": "One folder per run, holding what that run measured and produced."
+      },
+      {
+        "name": "outbox/",
+        "what": "Assembled and ready to send. One folder per person."
+      },
+      {
+        "name": "experiments/",
+        "what": "Tests of the pipeline. Nothing in here is sent to anyone."
+      },
+      {
+        "name": "workflows/",
+        "what": "How the work is done. One folder per job, each with its own SKILL.md."
+      },
+      {
+        "name": "versions/",
+        "what": "The method. No video in here."
+      },
+      {
+        "name": "_build/",
+        "what": "The builders that turn a run into a page. Still tied to one programme."
+      },
+      {
+        "name": "_activity/",
+        "what": "The dashboard builder and the data behind it."
+      },
+      {
+        "name": "_work/",
+        "what": "Scratch. Nothing here is a deliverable."
+      }
+    ]
+  },
+  "not_built": [
+    {
+      "what": "Candidate selection, the general case",
+      "detail": "Nothing reads a transcript and proposes which forty seconds to cut. readthrough narrows it to a page of lines. The choosing is yours."
+    },
+    {
+      "what": "The full-length edit",
+      "detail": "The episode with the dead parts removed."
+    },
+    {
+      "what": "Compositions",
+      "detail": "Longer pieces assembled from clips that already exist."
+    },
+    {
+      "what": "Splitting a video into its speakers",
+      "detail": "Third of the three workflows. Not started."
+    },
+    {
+      "what": "Any audience measurement",
+      "detail": "Nothing has been posted, so every claim about what makes a cut land is a hypothesis."
+    }
+  ],
+  "known_wrong": [
+    "Both test recordings carry a wrong name in the transcript itself: a host's surname misheard, and a guest's name split into three. A name read by any tool here is a reading of a sentence, never a fact about who is speaking."
+  ],
+  "_palette": "Patterns chosen from Cuts/_components/display-palette.md by information shape: play rows for the numbered start, cards for the five peer tools, stat blocks for the measured counts, svg diagrams for structure, method note for what is unverified. The stylesheet and the mandated layout audit are both lifted from the parent frame.",
+  "artifacts": {
+    "heading": "What you get out, and where it lands",
+    "lede": "Every workflow ends in a file you can open. None of them needs a server.",
+    "items": [
+      {
+        "file": "readthrough.html",
+        "from": "readthrough",
+        "what": "What is in a recording: who was up, when, what each stretch was about, and the lines worth cutting. One file with the stills embedded.",
+        "size": "399KB on a 1h12m episode",
+        "lands": "beside the recording, in inbox/<recording>/"
+      },
+      {
+        "file": "stills, and a page to pick them on",
+        "from": "stills",
+        "what": "Full-resolution frames pulled at the moments that scored, plus one crop per subject at a feed shape. A single HTML page comes with them showing every one, grouped and filterable, click through to full size, so you choose by looking instead of scrubbing. A manifest beside them records what was analysed and what was dropped.",
+        "size": "one JPG per pick, plus the page",
+        "lands": "the folder you named with --out"
+      },
+      {
+        "file": "moments.json",
+        "from": "readthrough",
+        "what": "Every moment found, with the sentence it matched and the kinds that were looked for and not found.",
+        "size": "small",
+        "lands": "inbox/<recording>/"
+      },
+      {
+        "file": "a plan, then a render",
+        "from": "shorts",
+        "what": "The plan is committed as the record. The render is disposable because the plan is not.",
+        "size": "plans are small, renders are not tracked",
+        "lands": "plans/ here, renders beside the footage"
+      },
+      {
+        "file": "proof.png",
+        "from": "shorts",
+        "what": "One frame of a cut, before the whole thing renders. The check that catches an empty panel.",
+        "size": "one image",
+        "lands": "wherever you point it"
+      }
+    ]
+  },
+  "workflows": {
+    "heading": "Four workflows, and how far each one got",
+    "lede": "A tool does one measurable thing. A workflow is the order to do them in, plus the judgement that is not in a JSON file. Three of these are written and one of them runs end to end.",
+    "human_note": "The full flow through the pipeline is twelve steps and seven of them are a person: saying what the source is and who is in it, looking at the proposed start, watching the feature, and sending it. Nothing here sends anything.",
+    "items": [
+      {
+        "name": "readthrough",
+        "job": "Read a whole recording and say what is in it and what is worth cutting.",
+        "scope": "any video",
+        "version": "shipping",
+        "status": "built",
+        "detail": "Three steps ending in an HTML page. Packaged, tested, run on two recordings in different formats.",
+        "objective": "An HTML page saying what is in a recording and what is worth cutting out of it. One file, opens by double-clicking, no server.",
+        "why": "Everything before the page is working material. A run that writes JSON and stops has produced nothing anybody asked for. The runner checks the page exists and carries a title, an inherited stylesheet, a timeline and at least one stretch.",
+        "steps": [
+          {
+            "n": 1,
+            "tool": "find_moments.py",
+            "in": "captions",
+            "out": "moments.json",
+            "does": "Finds every kind of moment it knows, and says which kinds it found none of."
+          },
+          {
+            "n": 2,
+            "tool": "pick_turn_stills.py",
+            "in": "video + moments.json",
+            "out": "turn-stills.json",
+            "does": "Hands each stretch to the stills tool and keeps the frame it chose. Skipped with no video."
+          },
+          {
+            "n": 3,
+            "tool": "build_readthrough.mjs",
+            "in": "moments.json + a stylesheet",
+            "out": "readthrough.html",
+            "does": "The deliverable."
+          }
+        ]
+      },
+      {
+        "name": "tighten",
+        "job": "Remove dead air and verified filler from any talking-head video. Nothing is chosen, reordered or rewritten.",
+        "scope": "any video",
+        "version": "v5",
+        "status": "built",
+        "detail": "The tool is packaged and the workflow is written at workflows/tighten/SKILL.md. Run end to end on two real segments, 13:49 and 16:14, verify passing 7 of 7 both times."
+      },
+      {
+        "name": "feature-cut",
+        "job": "Cut one person's segment out of a recorded show and hand it over. Calls tighten.",
+        "scope": "any show",
+        "version": "v5",
+        "status": "written, not general",
+        "detail": "One subject, one segment, three possible products: their clips, their composition, their trimmed feature. The steps are written at workflows/feature-cut/SKILL.md. The builders it depends on still hardcode one programme's stylesheet and read from that programme's folders, so it runs for that show and not yet for an arbitrary one."
+      },
+      {
+        "name": "composition",
+        "job": "Build a cut to a spine a person wrote.",
+        "scope": "any cut",
+        "version": "v3",
+        "status": "written, refused by the tool",
+        "detail": "Four rejected versions of craft sit behind it, at workflows/composition/SKILL.md. The spine is the job and the rest is measurement. One instance was specified and build_short.py refused it: the contract allows one hook, up to two builds and a payoff last, and a montage is one head and several bodies. The code change is specified and not made."
+      }
+    ]
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "_comment": [
+    "Template plan. Copy it, change the segments, keep the profile.",
+    "The profile is measured composite geometry for one source edit",
+    "and is reusable for anything cut from that edit. Re-measure it for a new",
+    "source with: python scripts/analyze_source.py SOURCE.mp4 --start S --end E",
+    "Every segment carries a beat and a why. build_short.py refuses a plan whose",
+    "beats do not make a Short: one hook, the payoff last, no more than two builds.",
+    "has not been chosen."
+  ],
+
+  "source": "/path/to/your/long-form-source.mp4",
+  "output": "/path/to/your/renders/my-short.mp4",
+
+  "profile": {
+    "inset": [0, 420, 424, 658],
+    "slide": [460, 90, 1920, 935],
+    "bg": "0x000000"
+  },
+
+  "segments": [
+    {
+      "in": 1200.0, "out": 1208.0,
+      "beat": "hook", "mode": "camera", "crop_x": 1288,
+      "why": "the claim, cold. crop_x from analyze_source on this span"
+    },
+    {
+      "in": 1420.0, "out": 1428.0,
+      "beat": "payoff", "mode": "slide", "layout": "stacked",
+      "why": "the reasoning, on the slide it belongs to"
+    }
+  ]
+}
